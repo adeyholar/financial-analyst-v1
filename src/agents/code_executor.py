@@ -1,15 +1,12 @@
 # D:\AI\Gits\financial-analyst-v1\src/agents/code_executor.py
 from pydantic import BaseModel, Field
+from pydantic.config import ConfigDict  # Added import
 from crewai import Agent
 from crewai_tools import CodeInterpreterTool
 
 class ExecutionOutput(BaseModel):
     result: str = Field(..., description="Result of code execution")
-
-    class Config:
-        json_schema_extra = {
-            "required": ["result"]
-        }
+    model_config = ConfigDict(json_schema_extra={"required": ["result"]})
 
 class CodeExecutorAgent(Agent):
     def __init__(self, llm):
@@ -29,14 +26,13 @@ class CodeExecutorAgent(Agent):
     def execute(self, code: str) -> ExecutionOutput:
         if self.tools and len(self.tools) > 0:
             try:
-                result = self.tools[0].run(code)  # Changed to run(), the correct method
+                result = self.tools[0].run(code)
                 return ExecutionOutput(result=f"Plot generated: {result}")
             except AttributeError:
                 print("Warning: Tool method 'run' not found or failed. Falling back to local execution.")
             except Exception as e:
                 print(f"Warning: Tool execution failed: {e}. Falling back to local execution.")
         
-        # Fallback to local execution
         try:
             local_namespace = {
                 "yf": __import__("yfinance"),

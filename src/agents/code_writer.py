@@ -1,14 +1,11 @@
-# D:\AI\Gits\financial-analyst-v1\src\agents\code_writer.py
+# D:\AI\Gits\financial-analyst-v1\src/agents/code_writer.py
 from pydantic import BaseModel, Field
+from pydantic.config import ConfigDict  # Added import
 from crewai import Agent
 
 class CodeOutput(BaseModel):
     code: str = Field(..., description="Executable Python code for stock visualization")
-
-    class Config:
-        json_schema_extra = {
-            "required": ["code"]
-        }
+    model_config = ConfigDict(json_schema_extra={"required": ["code"]})
 
 class CodeWriterAgent(Agent):
     def __init__(self, llm):
@@ -20,7 +17,6 @@ class CodeWriterAgent(Agent):
         )
 
     def write_code(self, analysis: dict) -> CodeOutput:
-        # Placeholder for code generation logic (to be implemented)
         code = """
 import yfinance as yf
 import matplotlib.pyplot as plt
@@ -28,6 +24,6 @@ import matplotlib.pyplot as plt
 stocks = {symbols}
 data = yf.download(stocks, period={timeframe})['Adj Close']
 data.plot(title=f'YTD Stock Gains for {stocks}')
-plt.show()
+plt.show()  # Ensure plot is displayed
 """.format(symbols=analysis['symbols'], timeframe=analysis['timeframe'])
         return CodeOutput(code=code)
